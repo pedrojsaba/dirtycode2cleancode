@@ -11,14 +11,13 @@
 			MajorVersion = majorVersion;
 		}
 
-		private BrowserName TranslateStringToBrowserName(string name)
+		private static BrowserName TranslateStringToBrowserName(string name)
 		{
-			if (name.Contains("IE")) return BrowserName.InternetExplorer;
-			//TODO: Add more logic for properly sniffing for other browsers.
-			return BrowserName.Unknown;
+		    return name.Contains("IE") ? BrowserName.InternetExplorer : BrowserName.Unknown;
+		    //TODO: Add more logic for properly sniffing for other browsers.
 		}
 
-		public enum BrowserName
+        public enum BrowserName
 		{
 			Unknown,
 			InternetExplorer,
