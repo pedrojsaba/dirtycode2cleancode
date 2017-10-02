@@ -12,7 +12,7 @@ namespace BusinessLayer
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
-        public int? Exp { get; set; }
+        public int? Experience { get; set; }
         public bool HasBlog { get; set; }
         public string BlogUrl { get; set; }
         public WebBrowser Browser { get; set; }
@@ -30,34 +30,26 @@ namespace BusinessLayer
             //lets init some vars
             int? speakerId;
             var appr = false;
-            //var nt = new List<string> {"MVC4", "Node.js", "CouchDB", "KendoUI", "Dapper", "Angular"};
+            
             var ot = new List<string> { "Cobol", "Punch Cards", "Commodore", "VBScript" };
-
-            //DEFECT #5274 DA 12/10/2012
-            //We weren't filtering out the prodigy domain so I added it.
-            var domains = new List<string> { "aol.com", "hotmail.com", "prodigy.com", "CompuServe.com" };
-
+            
             if (string.IsNullOrWhiteSpace(FirstName)) throw new ArgumentNullException(ErrorMessage.Required.Name);
             if (string.IsNullOrWhiteSpace(LastName)) throw new ArgumentNullException(ErrorMessage.Required.Lastname);
             if (string.IsNullOrWhiteSpace(Email)) throw new ArgumentNullException(ErrorMessage.Required.Email);
-
-            //put list of employers in array
-            var emps = new List<string> { "Microsoft", "Google", "Fog Creek Software", "37Signals" };
-
+          
             //DFCT #838 Jimmy 
             //We're now requiring 3 certifications so I changed the hard coded number. Boy, programming is hard.
             const int certificationsRequired = 3;
-            var good = ((Exp > 10 || HasBlog || Certifications.Count() > certificationsRequired || emps.Contains(Employer)));
+            const int miniumExperience = 10;
+            var good = ((Experience > miniumExperience || HasBlog || Certifications.Count() > certificationsRequired || DataList.Employers.Contains(Employer)));
 
             if (!good)
             {
                 //need to get just the domain from the email
                 var emailDomain = Email.Split('@').Last();
 
-                if (!domains.Contains(emailDomain) && (!(Browser.Name == WebBrowser.BrowserName.InternetExplorer && Browser.MajorVersion < 9)))
-                {
-                    good = true;
-                }
+                good = !DataList.Domains.Contains(emailDomain) &&
+                        (!(Browser.Name == WebBrowser.BrowserName.InternetExplorer && Browser.MajorVersion < 9));
             }
 
             if (!good) throw new SpeakerDoesntMeetRequirementsException(ErrorMessage.DoesNotMeetTheStandard);
@@ -75,44 +67,33 @@ namespace BusinessLayer
                         session.Approved = false;
                         break;
                     }
-                    else
-                    {
-                        session.Approved = true;
-                        appr = true;
-                    }
+                    session.Approved = true;
+                    appr = true;
                 }
             }
 
 
             if (!appr) throw new NoSessionsApprovedException(ErrorMessage.NoSessionsApproved);
 
-            RegistrationFee = GetRegistrationFee(Exp);
+            RegistrationFee = GetRegistrationFee(Experience);
 
-            //Now, save the speaker and sessions to the db.
-            //try
-            //{
+            //Now, save the speaker and sessions to the db.           
             speakerId = repository.SaveSpeaker(this);
-            //}
-            //catch (Exception )
-            //{
-            //    //in case the db call fails 
-            //    throw;
-            //}
-
+           
             //if we got this far, the speaker is registered.
             return speakerId;
         }
 
-        private int GetRegistrationFee(int? exp)
+        private static int GetRegistrationFee(int? experience)
         {
             //if we got this far, the speaker is approved
             //let's go ahead and register him/her now.
             //First, let's calculate the registration fee. 
             //More experienced speakers pay a lower fee.
-            if (exp <= 1) return 500;
-            if (exp >= 2 && Exp <= 3) return 250;
-            if (exp >= 4 && Exp <= 5) return 100;
-            if (exp >= 6 && Exp <= 9) return 50;
+            if (experience <= 1) return 500;
+            if (experience >= 2 && experience <= 3) return 250;
+            if (experience >= 4 && experience <= 5) return 100;
+            if (experience >= 6 && experience <= 9) return 50;
             return 0;
         }
 
