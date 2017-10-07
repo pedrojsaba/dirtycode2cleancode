@@ -13,5 +13,10 @@ namespace BusinessLayer
         {
             get { return new List<string> { "aol.com", "hotmail.com", "prodigy.com", "CompuServe.com" }; }
         }
+
+        public static List<string> OtherTechnologies
+        {
+            get { return new List<string> { "Cobol", "Punch Cards", "Commodore", "VBScript" }; }
+        }
     }
 }
